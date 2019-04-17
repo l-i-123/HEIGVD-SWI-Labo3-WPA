@@ -58,14 +58,14 @@ B           = min(APmac,Clientmac)+max(APmac,Clientmac)+min(ANonce,SNonce)+max(A
 
 data        = a2b_hex("0103005f02030a0000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000") #cf "Quelques détails importants" dans la donnée
 
-print "\n\nValues used to derivate keys"
-print "============================"
-print "Passphrase: ",passPhrase,"\n"
-print "SSID: ",ssid,"\n"
-print "AP Mac: ",b2a_hex(APmac),"\n"
-print "CLient Mac: ",b2a_hex(Clientmac),"\n"
-print "AP Nonce: ",b2a_hex(ANonce),"\n"
-print "Client Nonce: ",b2a_hex(SNonce),"\n"
+print("\n\nValues used to derivate keys")
+print("============================")
+print("Passphrase: ",passPhrase,"\n")
+print("SSID: ",ssid,"\n")
+print("AP Mac: ",b2a_hex(APmac),"\n")
+print("CLient Mac: ",b2a_hex(Clientmac),"\n")
+print("AP Nonce: ",b2a_hex(ANonce),"\n")
+print("Client Nonce: ",b2a_hex(SNonce),"\n")
 
 #calculate 4096 rounds to obtain the 256 bit (32 oct) PMK
 pmk = pbkdf2_hex(passPhrase, ssid, 4096, 32)
@@ -77,12 +77,12 @@ ptk = customPRF512(a2b_hex(pmk),A,B)
 mic = hmac.new(ptk[0:16],data,hashlib.sha1)
 
 
-print "\nResults of the key expansion"
-print "============================="
-print "PMK:\t\t",pmk,"\n"
-print "PTK:\t\t",b2a_hex(ptk),"\n"
-print "KCK:\t\t",b2a_hex(ptk[0:16]),"\n"
-print "KEK:\t\t",b2a_hex(ptk[16:32]),"\n"
-print "TK:\t\t",b2a_hex(ptk[32:48]),"\n"
-print "MICK:\t\t",b2a_hex(ptk[48:64]),"\n"
-print "MIC:\t\t",mic.hexdigest(),"\n"
+print("\nResults of the key expansion")
+print("=============================")
+print("PMK:\t\t",pmk,"\n")
+print("PTK:\t\t",b2a_hex(ptk),"\n")
+print("KCK:\t\t",b2a_hex(ptk[0:16]),"\n")
+print("KEK:\t\t",b2a_hex(ptk[16:32]),"\n")
+print("TK:\t\t",b2a_hex(ptk[32:48]),"\n")
+print("MICK:\t\t",b2a_hex(ptk[48:64]),"\n")
+print("MIC:\t\t",mic.hexdigest(),"\n")

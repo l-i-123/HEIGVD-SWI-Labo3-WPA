@@ -86,32 +86,32 @@ def test():
     def check256(data, salt, iterations, keylen, expected):
         rv = pbkdf2_hex(data, salt, iterations, keylen, hashlib.sha256)
         if rv != expected:
-            print 'Test failed:'
-            print '  Expected:   %s' % expected
-            print '  Got:        %s' % rv
-            print '  Parameters:'
-            print '    data=%s' % data
-            print '    data (hex)=%s' % data.encode('hex')
-            print '    salt=%s' % salt
-            print '    salt(hex)=%s' % salt.encode('hex')
-            print '    iterations=%d' % iterations
-            print '    hashfunc = hashlib.sha256'
+            print('Test failed:')
+            print('  Expected:   %s' % expected)
+            print('  Got:        %s' % rv)
+            print('  Parameters:')
+            print('    data=%s' % data)
+            print('    data (hex)=%s' % data.encode('hex'))
+            print('    salt=%s' % salt)
+            print('    salt(hex)=%s' % salt.encode('hex'))
+            print('    iterations=%d' % iterations)
+            print('    hashfunc = hashlib.sha256')
             print
             failed.append(1)
 
     def check512(data, salt, iterations, keylen, expected):
         rv = pbkdf2_hex(data, salt, iterations, keylen, hashlib.sha512)
         if rv != expected:
-            print 'Test failed:'
-            print '  Expected:   %s' % expected
-            print '  Got:        %s' % rv
-            print '  Parameters:'
-            print '    data=%s' % data
-            print '    data (hex)=%s' % data.encode('hex')
-            print '    salt=%s' % salt
-            print '    salt(hex)=%s' % salt.encode('hex')
-            print '    iterations=%d' % iterations
-            print '    hashfunc = hashlib.sha512'
+            print('Test failed:')
+            print('  Expected:   %s' % expected)
+            print('  Got:        %s' % rv)
+            print('  Parameters:')
+            print('    data=%s' % data)
+            print('    data (hex)=%s' % data.encode('hex'))
+            print('    salt=%s' % salt)
+            print('    salt(hex)=%s' % salt.encode('hex'))
+            print('    iterations=%d' % iterations)
+            print('    hashfunc = hashlib.sha512')
             print
             failed.append(1)
 
@@ -119,15 +119,15 @@ def test():
     def check(data, salt, iterations, keylen, expected):
         rv = pbkdf2_hex(data, salt, iterations, keylen)
         if rv != expected:
-            print 'Test failed:'
-            print '  Expected:   %s' % expected
-            print '  Got:        %s' % rv
-            print '  Parameters:'
-            print '    data=%s' % data
-            print '    data (hex)=%s' % data.encode('hex')
-            print '    salt=%s' % salt
-            print '    salt(hex)=%s' % salt.encode('hex')
-            print '    iterations=%d' % iterations
+            print('Test failed:')
+            print('  Expected:   %s' % expected)
+            print('  Got:        %s' % rv)
+            print('  Parameters:')
+            print('    data=%s' % data)
+            print('    data (hex)=%s' % data.encode('hex'))
+            print('    salt=%s' % salt)
+            print('    salt(hex)=%s' % salt.encode('hex'))
+            print('    iterations=%d' % iterations)
             print
             failed.append(1)
     # From RFC 6070
@@ -157,7 +157,7 @@ def test():
           '139c30c0966bc32ba55fdbf212530ac9c5ec59f1a452f5cc9ad940fea0598ed1')
     check('X' * 65, 'pass phrase exceeds block size', 1200, 32,
           '9ccad6d468770cd51b10e6a68721be611a8b4d282601db3b36be9246915ec82a')
-    print 'Fast SHA1 tests complete - if you did not see a failure warning, they worked.'
+    print('Fast SHA1 tests complete - if you did not see a failure warning, they worked.')
     # From http://stackoverflow.com/questions/5130513/pbkdf2-hmac-sha2-test-vectors
     check256('password', 'salt', 1, 32, 
           '120fb6cffcf8b32c43e7225256c4f837a86548c92ccc35480805987cb70be17b')
@@ -169,7 +169,7 @@ def test():
           '348c89dbcbd32b2f32d814b8116e84cf2b17347ebc1800181c4e2a1fb8dd53e1c635518c7dac47e9')
     check256('pass\0word', 'sa\0lt', 4096, 16, 
           '89b69d0516f829893c696226650a8687')
-    print 'Fast SHA256 tests complete - if you did not see a failure warning, they worked.'
+    print('Fast SHA256 tests complete - if you did not see a failure warning, they worked.')
     #From http://stackoverflow.com/questions/15593184/pbkdf2-hmac-sha-512-test-vectors
     check512('password', 'salt', 1, 64, 
           '867f70cf1ade02cff3752599a3a53dc4af34c7a669815ae5d513554e1c8cf252c02d470a285a0501bad999bfe943c08f050235d7d68b1da55e63f73b60a57fce')
@@ -181,16 +181,16 @@ def test():
           '8c0511f4c6e597c6ac6315d8f0362e225f3c501495ba23b868c005174dc4ee71115b59f9e60cd9532fa33e0f75aefe30225c583a186cd82bd4daea9724a3d3b8')
 
 
-    print 'Fast SHA512 tests complete - if you did not see a failure warning, they worked.'
+    print('Fast SHA512 tests complete - if you did not see a failure warning, they worked.')
 
-    print 'Starting slow tests!'
+    print('Starting slow tests!')
     # This one is from the RFC but it just takes for ages
     check('password', 'salt', 16777216, 20,
           'eefe3d61cd4da4e4e9945b3d6ba2158c2634e984')
-    print 'Slow SHA1 tests complete'    
+    print('Slow SHA1 tests complete')    
     check256('password', 'salt', 16777216, 32,
           'cf81c66fe8cfc04d1f31ecb65dab4089f7f179e89b3b0bcb17ad10e3ac6eba46')
-    print 'Slow SHA256 tests complete'
+    print('Slow SHA256 tests complete')
 
 
     raise SystemExit(bool(failed))
