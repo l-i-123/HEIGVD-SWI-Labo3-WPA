@@ -75,7 +75,17 @@ for passPhrase in wordArray:
     B           = min(APmac,Clientmac)+max(APmac,Clientmac)+min(ANonce,SNonce)+max(ANonce,SNonce) #used in pseudo-random function
 
     data = "0103005f" + wpa[8].load.encode('hex')
-    data = data[len(data)-36:len(data)]
+
+    print data
+
+    data = data[:-36]
+
+    print data
+
+    for i in range(0,36):
+        data = data + '0'
+ 
+    data = a2b_hex(data)
 
     print "data"
     print "===="
