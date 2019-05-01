@@ -67,6 +67,9 @@ print("Client Mac: ",b2a_hex(Clientmac),"\n")
 print("AP Nonce: ",b2a_hex(ANonce),"\n")
 print("Client Nonce: ",b2a_hex(SNonce),"\n")
 
+print("\n\n***************************** Test lecture passphrase *****************************")
+
+
 # Récupération des valeurs écrites en dure
 print("\n\nPrint en recupérant les données de wpa")
 print("============================")
